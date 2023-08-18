@@ -9,6 +9,16 @@ public class Criteria {
 	
 	private int sNum;    // ���� ���� ��ȣ
 	
+	private String type;
+	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	public Criteria() {     // �����ڰ� �����ɶ� ������� �ʱ�ȭ ���� �ִ´�
 		this.page = 1;
 		this.perPageNum =10;

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- persistance의 UserService_Mapper에서 메소드를 찾아서 매핑 -->
+<!--  -->
+<mapper namespace="com.ss.demo.persistence.EventService_Mapper">
+<!-- id는 메소드이름 parameterType은 매개변수 타입  (별칭 설정은 mybatis_config에서 한다)-->
+	
+<!-- 이벤트 전체 -->
+	<insert id="EventInsert" parameterType="ev">
+		 <selectKey order="AFTER" keyProperty="event_number" resultType="int">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert into Event_index( event_title, event_content,uNo,event_tel,event_start,event_end,event_local,LType,hit_count) 
+		 
+		 values ( #{event_title}, #{event_content},1,#{event_tel},#{event_start},#{event_end},#{event_local},#{LType},#{hit_count} );
+	</insert> 
+	
+	<insert id="insert" parameterType="ev">
+	<selectKey resultType="int" keyProperty="event_number" order="AFTER">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+		insert into Event_index( event_title, event_content, event_discript,uNo,event_tel,event_start,event_end,event_local,LType,hit_count)
+		 
+		values ( #{event_title}, #{event_content},#{event_discript},1,#{event_tel},#{event_start},#{event_end},#{event_local},#{LType},#{hit_count} );
+	</insert>
+	
+	<insert id="insert_file" parameterType="ev">
+		INSERT INTO event_attach(
+			event_number,
+			attach_logical_name,
+			attach_physical_name
+	<if test='thumbnail.equals("Y")'>
+			,Thumbnail
+	</if>
+		) VALUES (
+			#{event_number},
+			#{attach_logical_name},
+			#{attach_physical_name}
+	<if test='thumbnail.equals("Y")'>
+			,#{Thumbnail}
+	</if>
+		)
+	</insert>
+	
+	<update id="update" parameterType="ev">
+		UPDATE event_index
+		   SET event_title = #{event_title}
+		     , event_content = #{event_content}
+		     , event_discript = #{event_discript}
+		     , write_date = #{write_date}
+		     , event_tel = #{event_tel}
+		     , event_start = #{event_start}
+		     , event_end = #{event_end}
+		     , event_local = #{event_local}
+		     , hit_count = #{hit_count}
+
+		
+		WHERE event_number = #{event_number}
+	</update>
+	
+	
+
+	<select id="selectAll" resultType="ev" parameterType="searchVO">
+		SELECT *
+		  FROM event_index
+	   	LEFT OUTER JOIN (select * from event_attach where Thumbnail = 'Y') D 
+		  ON event_index.event_number = D.event_number
+		 WHERE 1=1
+<!-- 		<if test='searchType != null and searchType.equals("event_title")'> -->
+<!-- 		   AND title like concat('%', #{searchValue}, '%') -->
+<!-- 		</if> -->
+		<if test='type != null and !type.equals("TT")'>
+			AND LType = #{type}
+		</if>
+		order by event_index.event_number desc
+	</select>
+	<select id="select_event_count" resultType="int">
+		SELECT COUNT(*) FROM event_index WHERE status = 'Y'
+	</select>
+	
+	<select id="selectAll_review" resultType="erv">
+		SELECT *
+		  FROM event_review_list
+		WHERE event_number = #{event_number}
+	</select>
+	
+	<select id="selectAll_View" resultType="ev">
+		SELECT *,
+			 (select attach_physical_name from event_attach where thumbnail = 'Y' and event_number = event_index.event_number ) as physical_name 
+		FROM event_index 
+		WHERE event_index = #{event_index}
+			AND status = 'Y'
+	</select>
+	
+	<select id="selectOneByevent_number" resultType="ev" parameterType="int" >
+		SELECT *
+		  FROM event_index
+		 WHERE event_number = #{event_number}
+	</select>
+	
+	<select id="selectOneBycomment_number" resultType="erv" parameterType="int" >
+		SELECT *
+		  FROM event_review_list
+		 WHERE comment_number = #{comment_number}
+	</select>
+	
+	<select id="selecAll_event_Attach" resultType="ev" parameterType="int">
+		SELECT * FROM event_attach WHERE event_number = #{event_number}
+	</select>
+	
+	<delete id="delete_event" parameterType="int">
+	
+		DELETE
+		  FROM event_index
+		 WHERE event_number = #{event_number}
+	
+<!--  		UPDATE event_index SET status = 'N' WHERE event_number = #{event_number} -->
+	</delete>
+	
+	<insert id="insert_view_file" parameterType="ev">
+		INSERT INTO event_attach(
+			event_number, attach_logical_name, attach_physical_name, thumbnail
+		) VALUES(
+			#{event_number}, #{attach_logical_name}, #{attach_physical_name}, #{thumbnail}
+		)
+	</insert>
+	
+	<update id="init_attach_thumbnail" parameterType="int">
+		UPDATE event_attach SET
+			Thumbnail = 'N'
+		WHERE event_number = #{event_number}
+	</update>
+	
+	<update id="attach_thumbnail" parameterType="int">
+		UPDATE event_attach SET
+			Thumbnail = 'Y'
+		WHERE event_number = #{event_number}
+	</update>
+
+	<select id="selectAll_event_attach" parameterType="int" resultType="ev">
+		SELECT * FROM event_attach WHERE event_number = #{event_number}
+	</select>
+	
+	<delete id="delete_attach" parameterType="int">
+		DELETE FROM event_attach WHERE attach_number = #{attach_number}
+	</delete>
+	
+	<!--리뷰 -->
+	<insert id="insert_review" parameterType="erv">
+		<selectKey order="AFTER" keyProperty="comment_number" resultType="int">
+				SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert into event_review_list(comment_title,comment_number,event_number,comment_content,Ratio,uNo) 
+		 values (  #{comment_title},#{comment_number}, #{event_number},#{comment_content},#{Ratio},1);
+	</insert> 
+
+	<update id="update_review" parameterType="erv">
+		UPDATE event_review_list SET
+<!--		Ratio = #{Ratio}, -->
+			comment_content = #{comment_content},
+			comment_title = #{comment_title}
+			
+		WHERE comment_number = #{comment_number}
+	</update>
+	
+	<delete id="delete_review" parameterType="int">
+		DELETE
+		  FROM event_review_list
+		 WHERE comment_number = #{comment_number}
+		<!--DELETE FROM event_review_list SET status = 'N' WHERE comment_number = #{comment_number} -->
+	</delete>
+	
+	
+	<!-- <insert id="insert_like" parameterType="rentalhome_likeVO">
+		INSERT INTO rentalhome_like (rentalhome_idx, uno) 
+		VALUES (#{rentalhome_idx}, #{uno} )
+	</insert>
+	
+	<select id="select_like" parameterType="int" resultType="int">
+		SELECT count(*) 
+		FROM rentalhome_like 
+		WHERE rentalhome_idx = #{rentalhome_idx}
+		<if test="uno != null">
+			and uno = #{uno}
+		</if>
+	</select>
+
+	<select id="dupl_like" parameterType="rentalhome_likeVO" resultType="int">
+		SELECT count(*) 
+		FROM rentalhome_like 
+		WHERE rentalhome_idx = #{rentalhome_idx}
+				and uno = #{uno}
+	</select>
+
+	<delete id="delete_like" parameterType="rentalhome_likeVO">
+		DELETE 
+		FROM rentalhome_like 
+		WHERE rentalhome_idx = #{rentalhome_idx}
+				and uno = #{uno}
+	</delete> -->
+	
+	
+	
+	
+</mapper>

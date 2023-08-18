@@ -19,6 +19,11 @@
 	<typeAlias alias="foodreviewVO" type="com.ss.demo.domain.FoodReviewVO"/>
 	<typeAlias alias="food_likeVO" type="com.ss.demo.domain.Food_LikeVO"/>
 <!-- 	<typeAlias alias="attachVO" type="com.ss.demo.domain.FoodAttachVO"/> -->
+	<!-- event -->
+	<typeAlias type="com.ss.demo.domain.EventVO" alias="ev" /> 
+	<typeAlias type="com.ss.demo.domain.EventReviewVO" alias="erv" /> 
+	
+	
 </typeAliases>
 <!-- 
 <mappers>
